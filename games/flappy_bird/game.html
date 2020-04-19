@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
 </head>
 <body>
-    <script>
-        var config = {
+    <script type="module">
+        let config = {
             type: Phaser.AUTO,
             width: 800,
-            height: 600,
+            height: 550,
             backgroundColor: '#71c5cf',
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: { y: 300 },
+                    gravity: { y: 0 },
                     debug: false
                 }
             },
@@ -24,26 +24,33 @@
             }
         };
 
-        var game = new Phaser.Game(config);
+        let game = new Phaser.Game(config);
+        let pipes;
 
-        function preload ()
-        {
+        function preload() {
             this.load.image('bird', 'assets/bird.png');
             this.load.image('pipe', 'assets/pipe.png');
         }
 
-        function create ()
-        {
+        function create() {
             // Add gravatiy to the bird
             this.bird = this.physics.add.sprite(100, 245, 'bird');
             this.bird.body.setGravityY(1000);
 
+            // Add pipes
+            pipes = this.physics.add.group();
+
             // Add spaceKey
             this.spaceKey = this.input.keyboard.addKey('SPACE');
+
+            this.time.addEvent({
+                delay: 1500,                // ms
+                callback: addRowOfPipe,
+                loop: true
+            });
         }
 
-        function update ()
-        {
+        function update() {
             if (this.spaceKey.isDown) {
                 this.bird.body.setVelocityY(-350);
             }
@@ -53,7 +60,29 @@
             }
         }
 
+        function addOnePipe(x, y) {
+            // Create a pipe at the position x and y
+            let pipe = pipes.create(x, y, 'pipe');
 
+            // Add velocity to the pipe to make it move left
+            pipe.body.velocity.x = -200;
+
+            // Automatically kill the pipe when it's no longer visible
+            pipe.checkWorldBounds = true;
+            pipe.outOfBoundsKill = true;
+        }
+
+        function addRowOfPipe() {
+            // Randomly pick a number between 1 and 5
+            // This will be the hole position
+            const hole = Math.floor(Math.random() * 5) + 1;
+            // Add the 6 pipes
+            // With one big hole at position 'hole' and 'hole + 1'
+            for (let i = 0; i < 10; i++)
+                if (i !== hole && i !== hole + 1) {
+                    addOnePipe(700, i * 60 + 10);
+                }
+        }
     </script>
 </body>
 </html>
