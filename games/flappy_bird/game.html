@@ -7,8 +7,8 @@
     <script type="module">
         let config = {
             type: Phaser.AUTO,
-            width: 800,
-            height: 550,
+            width: 400,
+            height: 490,
             backgroundColor: '#71c5cf',
             physics: {
                 default: 'arcade',
@@ -17,14 +17,18 @@
                     debug: false
                 }
             },
+            addOnePipe: addOnePipe,
+            addRowOfPipe: addRowOfPipe,
             scene: {
                 preload: preload,
                 create: create,
-                update: update
-            }
+                update: update,
+            },
         };
 
         let game = new Phaser.Game(config);
+        let score;
+        let scoreText;
         let pipes;
 
         function preload() {
@@ -43,22 +47,33 @@
             // Add spaceKey
             this.spaceKey = this.input.keyboard.addKey('SPACE');
 
+            // Add events updating pipes
             this.time.addEvent({
                 delay: 1500,                // ms
                 callback: addRowOfPipe,
                 loop: true
             });
+
+            score = 0;
+            scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
         }
 
         function update() {
+            let hit = (bird, pipes) => {
+                this.physics.pause();
+                this.scene.restart();
+            };
+            this.physics.add.collider(this.bird, pipes, hit, null, this);
             if (this.spaceKey.isDown) {
                 this.bird.body.setVelocityY(-350);
             }
 
-            if (this.bird.y < 0 || this.bird.y > 550) {
+            if (this.bird.y < 0 || this.bird.y > 490) {
                 this.scene.restart();
             }
         }
+
+
 
         function addOnePipe(x, y) {
             // Create a pipe at the position x and y
@@ -78,10 +93,13 @@
             const hole = Math.floor(Math.random() * 5) + 1;
             // Add the 6 pipes
             // With one big hole at position 'hole' and 'hole + 1'
-            for (let i = 0; i < 10; i++)
+            for (let i = 0; i < 8; i++) {
                 if (i !== hole && i !== hole + 1) {
-                    addOnePipe(700, i * 60 + 10);
+                    addOnePipe(400, i * 60 + 30);
                 }
+            }
+            score += 1;
+            scoreText.setText('Score: ' + score);
         }
     </script>
 </body>
